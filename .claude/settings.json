@@ -1,0 +1,38 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit|NotebookEdit|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/safety-guard.sh\"",
+            "statusMessage": "안전가드 검사 중..."
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/git-secret-guard.sh\"",
+            "statusMessage": "커밋 시크릿 스캔 중..."
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_response.filePath // .tool_input.file_path // empty' | { read -r f; [ -n \"$f\" ] && \"${CLAUDE_PROJECT_DIR:-.}/node_modules/.bin/prettier\" --write --ignore-unknown \"$f\"; } 2>/dev/null || true",
+            "statusMessage": "Prettier 포맷 적용 중..."
+          }
+        ]
+      }
+    ]
+  }
+}
